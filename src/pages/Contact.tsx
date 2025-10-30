@@ -1,0 +1,166 @@
+import React from "react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { Mail, MapPin, Phone, Send } from "lucide-react";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+
+const Contact: React.FC = () => {
+    return (
+        <div className="min-h-screen flex flex-col font-cisco font-thin bg-gray-50 text-gray-900">
+            <Navbar />
+
+            {/* Hero Section */}
+            <section
+                className="relative h-[70vh] flex items-center px-6 md:px-20"
+                style={{
+                    backgroundImage:
+                        "url('https://images.unsplash.com/photo-1521737604893-d14cc237f11d?auto=format&fit=crop&w=1600&q=80')",
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                }}
+            >
+                {/* Dark Overlay */}
+                <div className="absolute inset-0 bg-black/60"></div>
+
+                {/* Glass Text Card */}
+                <div className="relative z-10 max-w-3xl text-left">
+                    <h1 className="text-4xl md:text-5xl font-thin text-white mb-4">
+                        Contact <span className="text-blue-600">Vaastman</span>
+                    </h1>
+                    <p className="text-gray-200 text-lg md:text-xl">
+                        Let’s collaborate and build innovative IT solutions together.
+                    </p>
+                </div>
+            </section>
+
+            {/* Contact Info + Form Section */}
+            <main className="flex-1 container mx-auto px-6 py-16 grid grid-cols-1 lg:grid-cols-2 gap-12">
+                {/* Left: Info Cards */}
+                <div className="space-y-8">
+                    <div>
+                        <h2 className="text-3xl font-bold mb-4 text-blue-600">Get in Touch</h2>
+                        <p className="text-gray-600">
+                            Our team is available to discuss your projects, collaborations, or any questions you may have.
+                        </p>
+                    </div>
+
+                    {/* Info Cards */}
+                    <div className="space-y-6">
+                        <div className="flex items-center gap-4 p-4 bg-white/20 backdrop-blur-md rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+                            <div className="p-4 bg-gradient-to-tr from-blue-400 to-blue-600 rounded-full text-white">
+                                <Phone />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-blue-600">Phone</p>
+                                <p className="text-black">+91 98765 43210</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 p-4 bg-white/20 backdrop-blur-md rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+                            <div className="p-4 bg-gradient-to-tr from-green-400 to-green-600 rounded-full text-white">
+                                <Mail />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-blue-600">Email</p>
+                                <p className="text-black">contact@vaastman.com</p>
+                            </div>
+                        </div>
+
+                        <div className="flex items-center gap-4 p-4 bg-white/20 backdrop-blur-md rounded-xl shadow-lg hover:scale-105 transition-transform duration-300">
+                            <div className="p-4 bg-gradient-to-tr from-purple-400 to-purple-600 rounded-full text-white">
+                                <MapPin />
+                            </div>
+                            <div>
+                                <p className="font-semibold text-blue-600">Office</p>
+                                <p className="text-black">
+                                    Vaastman IT Solutions Pvt. Ltd., Patna, Bihar – 800001, India
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Right: Contact Form */}
+                <Card className="p-8 shadow-xl bg-white/30 backdrop-blur-md border border-white/20 rounded-xl">
+                    <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">Send Us a Message</h2>
+                    <form
+                        className="space-y-5"
+                        onSubmit={(e) => {
+                            e.preventDefault();
+                            alert("✅ Message submitted successfully!");
+                        }}
+                    >
+                        <div>
+                            <Label htmlFor="name" className="text-blue-600">Full Name</Label>
+                            <Input
+                                id="name"
+                                placeholder="Enter your full name"
+                                required
+                                className="focus:border-blue-600 focus:ring focus:ring-blue-200"
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="email" className="text-blue-600">Email Address</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="example@email.com"
+                                required
+                                className="focus:border-blue-600 focus:ring focus:ring-blue-200"
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="subject" className="text-blue-600">Subject</Label>
+                            <Input
+                                id="subject"
+                                placeholder="e.g. Website Development Inquiry"
+                                className="focus:border-blue-600 focus:ring focus:ring-blue-200"
+                            />
+                        </div>
+
+                        <div>
+                            <Label htmlFor="message" className="text-blue-600">Your Message</Label>
+                            <Textarea
+                                id="message"
+                                placeholder="Write your message here..."
+                                rows={5}
+                                required
+                                className="focus:border-blue-600 focus:ring focus:ring-blue-200"
+                            />
+                        </div>
+
+                        <Button
+                            type="submit"
+                            className="w-full bg-gradient-to-r from-blue-500 to-blue-600 hover:opacity-90 text-white"
+                        >
+                            <Send className="w-4 h-4 mr-2" /> Send Message
+                        </Button>
+                    </form>
+                </Card>
+            </main>
+
+            {/* Map Section */}
+            <section className="w-full h-[400px] px-6 mb-16 rounded-xl overflow-hidden shadow-xl">
+                <iframe
+                    title="Vaastman Office Location"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3608.8284120374973!2d85.13756427459491!3d25.612677516752853!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39ed58434492efc5%3A0x1af7b0e018dfb5f2!2sPatna%2C%20Bihar!5e0!3m2!1sen!2sin!4v1698058549332!5m2!1sen!2sin"
+                    width="100%"
+                    height="100%"
+                    allowFullScreen
+                    loading="lazy"
+                    className="rounded-xl"
+                ></iframe>
+            </section>
+
+            <Footer />
+        </div>
+    );
+};
+
+export default Contact;
