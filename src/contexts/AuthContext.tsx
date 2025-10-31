@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthState } from '@/types';
+import { toast } from 'sonner';
 // import { getAuth, saveAuth, clearAuth, initializeDefaultData } from '@/utils/localStorage';
 import { initializeDefaultData, getAuth, saveAuth, clearAuth } from '@/utils/localStorage';
 
@@ -9,6 +10,17 @@ interface AuthContextType extends AuthState {
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
+const url=import.meta.env.VITE_API_URL
+
+export const getAuthHeader = (useRefresh = false) => {
+  const token = useRefresh
+    ? localStorage.getItem("refreshToken")
+    : localStorage.getItem("accessToken");
+
+  return token ? { Authorization: `Bearer ${token}` } : {};
+};
+
+
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [authState, setAuthState] = useState<AuthState>({
@@ -18,7 +30,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   });
 
   useEffect(() => {
-    initializeDefaultData();
+    // initializeDefaultData();
     const user = getAuth();
     if (user) {
       setAuthState({
@@ -30,10 +42,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, []);
 
   const login = async (email: string, password: string): Promise<boolean> => {
-    const usersData = localStorage.getItem('cms_users');
-    const users: User[] = usersData ? JSON.parse(usersData) : [];
+    // const usersData = localStorage.getItem('cms_users');
+    // const users: User[] = usersData ? JSON.parse(usersData) : [];
 
-    const user = users.find(u => u.email === email && u.password === password);
+    // const user = users.find(u => u.email === email && u.password === password);
+    const res = await fetch(`${url}/api/v1/auth/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email, password }),
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Login failed")
+      toast.dismiss(data.message);
+    
+    const user = data.data.user;
+    // Save tokens for later
+    localStorage.setItem("accessToken", data.accessToken);
+    localStorage.setItem("refreshToken", data.refreshToken);
 
     if (user && user.isActive !== false) {
       saveAuth(user);
@@ -49,8 +75,24 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     // return true;
   };
 
-  const logout = () => {
+  const logout =async () => {
     clearAuth();
+
+    const headers = {
+    "Content-Type": "application/json",
+    ...getAuthHeader(true), // send refresh token
+  };
+    const res = await fetch(`${url}/api/v1/auth/logout`, {
+      method: "POST",
+      headers,
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.message || "Logout failed");
+
+    // Clear tokens
+    localStorage.removeItem("accessToken");
+    localStorage.removeItem("refreshToken");
     setAuthState({
       user: null,
       isAuthenticated: false,

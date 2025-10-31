@@ -32,7 +32,20 @@ const AdminLogin = () => {
       setLoading(false);
       return;
     }
-    
+
+    // const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/auth/login`, {
+    //   method: "POST",
+    //   headers: { "Content-Type": "application/json" },
+    //   body: JSON.stringify({ email, password }),
+    // });
+
+    // const data = await res.json();
+    // if (!res.ok) throw new Error(data.message || "Login failed");
+
+    // // Save tokens for later
+    // localStorage.setItem("accessToken", data.accessToken);
+    // localStorage.setItem("refreshToken", data.resreshToken || data.refreshToken);
+
     const success = await login(email, password);
     setLoading(false);
 

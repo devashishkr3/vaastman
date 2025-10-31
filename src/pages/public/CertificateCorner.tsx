@@ -4,68 +4,85 @@ import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { getCertificates, getUniversities } from '@/utils/localStorage';
+// import { getCertificates, getUniversities } from '@/utils/localStorage';
 import { Award, Search, Download } from 'lucide-react';
 import { toast } from 'sonner';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 
 const CertificateCorner = () => {
-  const [query, setQuery] = useState('');
+  const [query, setQuery] = useState("");
   const [result, setResult] = useState<any>(null);
   const [universities, setUniversities] = useState<any[]>([]);
 
   // Load universities once
-  useState(() => {
-    setUniversities(getUniversities());
-  });
+  // useState(() => {
+  //   setUniversities(getUniversities());
+  // });
 
-  const handleSearch = () => {
-    const certs = getCertificates();
-    const found = certs.find(c => c.certificateId === query || c.studentEmail === query);
-    if (found) {
-      setResult(found);
-      toast.success('Certificate found!');
-    } else {
-      setResult(null);
-      toast.error('Certificate not found');
-    }
-  };
+  const handleSearch =async (e) => {
+    // const certs = getCertificates();
+    // const found = certs.find(c => c.certificateId === query || c.studentEmail === query);
+    // if (found) {
+    //   setResult(found);
+    //   toast.success('Certificate found!');
+    // } else {
+    //   setResult(null);
+    //   toast.error('Certificate not found');
+    // }
 
-  const handleDownload = () => {
-    if (result) {
-      toast.success('Certificate download started!');
-      const university = universities.find(u => u.id === result.universityId)?.name || '-';
-      const certificateText = `
-CERTIFICATE OF COMPLETION
+    
+      e.preventDefault();
+      try {
+        const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/public/certificates/search?query=${query.replace(" ", "%20")}`, {
+          method: "GET",
+          headers: { "Content-Type": "application/json" },
+        });
+        const data = await res.json();
+        console.log("Server response:", data);
+        setResult(data.data);
+        toast.success(data.message);
+      } catch (err) {
+        console.error("Error:", err);
+      }
+    };
 
-This is to certify that
+  // };
 
-${result.studentName}
+//   const handleDownload = () => {
+//     if (result) {
+//       toast.success('Certificate download started!');
+//       const university = universities.find(u => u.id === result.universityId)?.name || '-';
+//       const certificateText = `
+// CERTIFICATE OF COMPLETION
 
-Has successfully completed the ${result.domain} program
+// This is to certify that
 
-at ${result.collegeName}, ${university}
+// ${result.studentName}
 
-Certificate ID: ${result.certificateId}
-Issue Date: ${new Date(result.issueDate).toLocaleDateString()}
+// Has successfully completed the ${result.domain} program
 
-Email: ${result.studentEmail}
-      `;
+// at ${result.collegeName}, ${university}
 
-      const blob = new Blob([certificateText], { type: 'text/plain' });
-      const url = window.URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `Certificate_${result.certificateId}.txt`;
-      a.click();
-      window.URL.revokeObjectURL(url);
-    }
-  };
+// Certificate ID: ${result.certificateId}
+// Issue Date: ${new Date(result.issueDate).toLocaleDateString()}
 
-  const getUniversityName = (id: string) => {
-    return universities.find(u => u.id === id)?.name || '-';
-  };
+// Email: ${result.studentEmail}
+//       `;
+
+//       const blob = new Blob([certificateText], { type: 'text/plain' });
+//       const url = window.URL.createObjectURL(blob);
+//       const a = document.createElement('a');
+//       a.href = url;
+//       a.download = `Certificate_${result.certificateId}.txt`;
+//       a.click();
+//       window.URL.revokeObjectURL(url);
+    // }
+  // };
+
+//   const getUniversityName = (id: string) => {
+//     return universities.find(u => u.id === id)?.name || '-';
+//   };
 
   return (
     <div className="min-h-screen bg-gray-50 font-cisco font-normal">
@@ -102,31 +119,32 @@ Email: ${result.studentEmail}
         </Card>
 
         {/* Result Card */}
-        {result && (
-          <Card className="shadow-lg rounded-2xl border border-blue-600 bg-white">
+        {result && result.map((r,i)=> (
+          <Card key={i} className="shadow-lg rounded-2xl border border-blue-600 bg-white mt-10">
             <CardContent className="p-6">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
-                <h3 className="text-2xl md:text-3xl font-bold text-blue-600">{result.studentName}</h3>
-                <Button
-                  onClick={handleDownload}
-                  size="sm"
+                <h3 className="text-2xl md:text-3xl font-bold text-blue-600">{r.studentName}</h3>
+                <a
+                  // onClick={handleDownload}
+                  // size="sm"
+                  href={r.certificateURL}
                   className="bg-blue-600 hover:bg-blue-700 text-white rounded-lg flex items-center px-4 py-2 transition-all duration-300"
                 >
                   <Download className="mr-2 h-4 w-4" />
                   Download
-                </Button>
+                </a>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-blue-600 text-base">
-                <p><strong>Certificate ID:</strong> {result.certificateId}</p>
-                <p><strong>Email:</strong> {result.studentEmail}</p>
-                <p><strong>Domain:</strong> {result.domain}</p>
-                <p><strong>College:</strong> {result.collegeName}</p>
-                <p><strong>University:</strong> {getUniversityName(result.universityId)}</p>
-                <p><strong>Issue Date:</strong> {new Date(result.issueDate).toLocaleDateString()}</p>
+                <p><strong>Certificate ID:</strong> {r.certNumber}</p>
+                <p><strong>Email:</strong> {result.email}</p>
+                <p><strong>Domain:</strong> {result.course}</p>
+                {/* <p><strong>College:</strong> {result.collegeName}</p> */}
+                {/* <p><strong>University:</strong> {r.enrollmentNo}</p> */}
+                <p><strong>Issue Date:</strong> {new Date(result.internshipTo).toLocaleDateString()}</p>
               </div>
             </CardContent>
           </Card>
-        )}
+        ))}
       </div>
 
       <Footer />

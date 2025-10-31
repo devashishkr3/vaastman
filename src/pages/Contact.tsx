@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Mail, MapPin, Phone, Send } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
+import { toast } from 'sonner';
 import { Footer } from "@/components/Footer";
 
 // const API_URL = import.meta.env.VITE_API_URL;
@@ -15,21 +16,25 @@ const Contact: React.FC = () => {
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     // const [subject, setSubject]=useState("");
-    const [msg, setMsg] = useState("");
+    const [message, setMsg] = useState("");
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        console.log(name,email,message);
         try {
             const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/public/contact`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ name, email, msg }),
+                body: JSON.stringify({ name, email, message }),
             });
 
             const data = await res.json();
             console.log("Server response:", data);
-            alert(data.message);
+            // alert(data.message);
+            setName("");
+            setEmail("");
+            setMsg("");
+            toast.success(data.message);
         } catch (err) {
             console.error("Error:", err);
         }
@@ -157,7 +162,7 @@ const Contact: React.FC = () => {
                             <Label htmlFor="message" className="text-blue-600">Your Message</Label>
                             <Textarea
                                 id="message"
-                                value={msg}
+                                value={message}
                                 onChange={(e) => setMsg(e.target.value)}
                                 placeholder="Write your message here..."
                                 rows={5}

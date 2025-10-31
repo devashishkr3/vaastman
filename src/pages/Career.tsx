@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { toast } from 'sonner';
 import { Card } from "@/components/ui/card";
 import {
     Dialog,
@@ -26,6 +27,11 @@ import {
 const Career: React.FC = () => {
     const [open, setOpen] = useState(false);
     const [selectedRole, setSelectedRole] = useState<any>(null);
+    const [name, setName]=useState("");
+    const [email, setEmail]=useState("");
+    const [phone, setPhone]=useState("");
+    const [domain, setDomain]=useState("");
+    const [motiveType, setMType]=useState("");
 
     const positions = [
         {
@@ -73,6 +79,34 @@ const Career: React.FC = () => {
             duration: "6 Months",
         },
     ];
+
+
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setDomain(selectedRole.title);
+        console.log(selectedRole)
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/public/career`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, phone, domain, motiveType }),
+            });
+            setOpen(false);
+            const data = await res.json();
+            console.log("Server response:", data);
+            // alert(data.message);
+            setName("")
+            setEmail("");
+            setPhone("");
+            setDomain("");
+            setMType("");
+            toast.success(data.message);
+        } catch (err) {
+            console.error("Error:", err);
+        }
+    };
+
 
     const jobTitles = positions.filter((p) => p.type === "Job").map((p) => p.title);
     const internshipTitles = positions.filter((p) => p.type === "Internship").map((p) => p.title);
@@ -189,18 +223,20 @@ const Career: React.FC = () => {
 
                         {/* Job Tab */}
                         <TabsContent value="job">
-                            <form className="space-y-4">
+                            <form className="space-y-4"
+                                onSubmit={handleSubmit}
+                            >
                                 <div>
                                     <Label>Full Name</Label>
-                                    <Input placeholder="Enter your name" required />
+                                    <Input placeholder="Enter your name"  value={name}required onChange={(e) => setName(e.target.value)}/>
                                 </div>
                                 <div>
                                     <Label>Email Address</Label>
-                                    <Input type="email" placeholder="example@email.com" required />
+                                    <Input type="email" value={email} placeholder="example@email.com" required onChange={(e) => setEmail(e.target.value)}/>
                                 </div>
                                 <div>
                                     <Label>Phone Number</Label>
-                                    <Input type="tel" placeholder="+91 9876543210" required />
+                                    <Input type="tel" value={phone} placeholder="+91 9876543210" required onChange={(e) => setPhone(e.target.value)}/>
                                 </div>
                                 <div>
                                     <Label>Position Applying For</Label>
@@ -217,20 +253,20 @@ const Career: React.FC = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div>
+                                {/* <div>
                                     <Label>Experience (Years)</Label>
                                     <Input type="number" placeholder="e.g. 2" />
-                                </div>
-                                <div>
+                                </div> */}
+                                {/* <div>
                                     <Label>Upload Resume</Label>
                                     <Input type="file" accept=".pdf,.doc,.docx" />
-                                </div>
+                                </div> */}
                                 <div>
                                     <Label>Why do you want to join Vaastman?</Label>
-                                    <Textarea placeholder="Write a short answer..." />
+                                    <Textarea value={motiveType} placeholder="Write a short answer..." onChange={(e) => setMType(e.target.value)}/>
                                 </div>
                                 <div className="pt-2 pb-4">
-                                    <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
+                                    <Button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white">
                                         <Send className="w-4 h-4 mr-2" /> Submit Application
                                     </Button>
                                 </div>
@@ -239,18 +275,20 @@ const Career: React.FC = () => {
 
                         {/* Internship Tab */}
                         <TabsContent value="internship">
-                            <form className="space-y-4">
+                            <form className="space-y-4"
+                            onSubmit={handleSubmit}
+                            >
                                 <div>
                                     <Label>Full Name</Label>
-                                    <Input placeholder="Enter your name" required />
+                                    <Input placeholder="Enter your name" required value={name} onChange={(e) => setName(e.target.value)} />
                                 </div>
                                 <div>
                                     <Label>Email Address</Label>
-                                    <Input type="email" placeholder="example@email.com" required />
+                                    <Input type="email" value={email} placeholder="example@email.com" required onChange={(e) => setEmail(e.target.value)}/>
                                 </div>
                                 <div>
                                     <Label>Phone Number</Label>
-                                    <Input type="tel" placeholder="+91 9876543210" required />
+                                    <Input type="tel" value={phone} placeholder="+91 9876543210" required onChange={(e) => setPhone(e.target.value)}/>
                                 </div>
                                 <div>
                                     <Label>Internship Domain</Label>
@@ -267,17 +305,17 @@ const Career: React.FC = () => {
                                         </SelectContent>
                                     </Select>
                                 </div>
-                                <div>
+                                {/* <div>
                                     <Label>College / University</Label>
                                     <Input placeholder="Your institution name" />
                                 </div>
                                 <div>
                                     <Label>Upload Resume</Label>
                                     <Input type="file" accept=".pdf,.doc,.docx" />
-                                </div>
+                                </div> */}
                                 <div>
                                     <Label>What do you expect to learn?</Label>
-                                    <Textarea placeholder="Write your answer..." />
+                                    <Textarea value={motiveType} placeholder="Write your answer..." onChange={(e) => setMType(e.target.value)}/>
                                 </div>
                                 <div className="pt-2 pb-4">
                                     <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white">
