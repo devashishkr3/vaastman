@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,33 @@ import { Mail, MapPin, Phone, Send } from "lucide-react";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 
+// const API_URL = import.meta.env.VITE_API_URL;
+
 const Contact: React.FC = () => {
+
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    // const [subject, setSubject]=useState("");
+    const [msg, setMsg] = useState("");
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_URL}/api/v1/public/contact`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ name, email, msg }),
+            });
+
+            const data = await res.json();
+            console.log("Server response:", data);
+            alert(data.message);
+        } catch (err) {
+            console.error("Error:", err);
+        }
+    };
+
     return (
         <div className="min-h-screen flex flex-col font-cisco font-thin bg-gray-50 text-gray-900">
             <Navbar />
@@ -89,16 +115,15 @@ const Contact: React.FC = () => {
                     <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">Send Us a Message</h2>
                     <form
                         className="space-y-5"
-                        onSubmit={(e) => {
-                            e.preventDefault();
-                            alert("✅ Message submitted successfully!");
-                        }}
+                        onSubmit={handleSubmit}
                     >
                         <div>
                             <Label htmlFor="name" className="text-blue-600">Full Name</Label>
                             <Input
                                 id="name"
                                 placeholder="Enter your full name"
+                                value={name}
+                                onChange={(e) => setName(e.target.value)}
                                 required
                                 className="focus:border-blue-600 focus:ring focus:ring-blue-200"
                             />
@@ -109,25 +134,31 @@ const Contact: React.FC = () => {
                             <Input
                                 id="email"
                                 type="email"
+                                value={email}
+                                onChange={(e) => setEmail(e.target.value)}
                                 placeholder="example@email.com"
                                 required
                                 className="focus:border-blue-600 focus:ring focus:ring-blue-200"
                             />
                         </div>
 
-                        <div>
+                        {/* <div>
                             <Label htmlFor="subject" className="text-blue-600">Subject</Label>
                             <Input
                                 id="subject"
+                                value={subject}
+                                onChange={(e) => setSubject(e.target.value)}
                                 placeholder="e.g. Website Development Inquiry"
                                 className="focus:border-blue-600 focus:ring focus:ring-blue-200"
                             />
-                        </div>
+                        </div> */}
 
                         <div>
                             <Label htmlFor="message" className="text-blue-600">Your Message</Label>
                             <Textarea
                                 id="message"
+                                value={msg}
+                                onChange={(e) => setMsg(e.target.value)}
                                 placeholder="Write your message here..."
                                 rows={5}
                                 required

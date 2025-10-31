@@ -80,13 +80,13 @@ export const Footer = () => {
               <li className="flex items-start gap-3">
                 <MapPin className="w-5 h-5 text-blue-600 mt-1 flex-shrink-0" />
                 <span className="text-gray-400">
-                  123 Business Avenue, Tech District, Silicon Valley, CA 94025
+                  Vaastman IT Solutions Pvt. Ltd., Patna, Bihar – 800001, India
                 </span>
               </li>
               <li className="flex items-center gap-3">
                 <Phone className="w-5 h-5 text-blue-600 flex-shrink-0" />
                 <a href="tel:+1234567890" className="text-gray-400 hover:text-blue-600 transition-colors">
-                  +1 (234) 567-890
+                  +91 98765 43210
                 </a>
               </li>
               <li className="flex items-center gap-3">
