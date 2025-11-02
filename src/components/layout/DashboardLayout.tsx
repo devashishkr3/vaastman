@@ -26,7 +26,7 @@ export const DashboardLayout = () => {
   const handleLogout = () => {
     logout();
     toast.success('Logged out successfully');
-    navigate(role === 'admin' ? '/admin/login' : '/employee/login');
+    navigate(role === 'ADMIN' ? '/admin/login' : '/employee/login');
   };
 
   const adminMenu = [
@@ -43,7 +43,7 @@ export const DashboardLayout = () => {
     { name: 'View Certificates', path: '/employee/certificates', icon: Eye },
   ];
 
-  const menuItems = role === 'admin' ? adminMenu : employeeMenu;
+  const menuItems = role === 'ADMIN' ? adminMenu : employeeMenu;
 
   return (
     <div className="min-h-screen bg-background">

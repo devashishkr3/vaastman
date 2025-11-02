@@ -383,15 +383,15 @@ export const addCertificate = (cert: Certificate) => {
   // update employee stats by name
   const users = getUsers();
   const empIndex = users.findIndex((u) => u.name === cert.createdBy); // match by name
-  if (empIndex !== -1) {
-    const emp = users[empIndex];
-    users[empIndex] = {
-      ...emp,
-      certificatesCreatedCount: (emp.certificatesCreatedCount || 0) + 1,
-      lastCertificateDate: new Date().toISOString(),
-    };
-    saveUsers(users);
-  }
+  // if (empIndex !== -1) {
+  //   const emp = users[empIndex];
+  //   users[empIndex] = {
+  //     ...emp,
+  //     certificatesCreatedCount: (emp.certificatesCreatedCount || 0) + 1,
+  //     lastCertificateDate: new Date().toISOString(),
+  //   };
+  //   saveUsers(users);
+  // }
 };
 
 export const updateCertificate = (cert: Certificate) => {
@@ -431,17 +431,16 @@ export const generateCertificateId = () =>
 // ================== INITIAL DEFAULT DATA ===================
 export const initializeDefaultData = () => {
   if (getUsers().length === 0) {
-    addUser({
-      id: '1',
-      name: 'System Admin',
-      email: 'admin@cms.com',
-      password: 'admin123',
-      role: 'admin',
-      isActive: true,
-      createdAt: new Date().toISOString(),
-      certificatesCreatedCount: 0,
-      lastCertificateDate: '',
-    });
+    // addUser({
+    //   id: '1',
+    //   name: 'System Admin',
+    //   email: 'admin@cms.com',
+    //   password: 'admin123',
+    //   role: 'ADMIN',
+    //   isActive: true,
+    //   createdAt: new Date().toISOString(),
+    //   lastCertificateDate: '',
+    // });
   }
 };
 

@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { User, AuthState } from '@/types';
 import { toast } from 'sonner';
-// import { getAuth, saveAuth, clearAuth, initializeDefaultData } from '@/utils/localStorage';
-import { initializeDefaultData, getAuth, saveAuth, clearAuth } from '@/utils/localStorage';
+import { getAuth, saveAuth, clearAuth, initializeDefaultData } from '@/utils/localStorage';
+// import { initializeDefaultData, getAuth, saveAuth, clearAuth } from '@/utils/localStorage';
 
 interface AuthContextType extends AuthState {
   login: (email: string, password: string) => Promise<boolean>;
@@ -53,14 +53,19 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     });
 
     const data = await res.json();
-    if (!res.ok) throw new Error(data.message || "Login failed")
-      toast.dismiss(data.message);
+    if (!res.ok) //throw new Error(data.message || "Login failed")
+    {
+      toast.dismiss(data.message)
+      return false
+    }
+    toast.dismiss(data.message);
+    // console.log("login: ",data);
     
-    const user = data.data.user;
+    const user = data.data;
     // Save tokens for later
     localStorage.setItem("accessToken", data.accessToken);
     localStorage.setItem("refreshToken", data.refreshToken);
-
+    // console.log("login role: ",user.role)
     if (user && user.isActive !== false) {
       saveAuth(user);
       setAuthState({

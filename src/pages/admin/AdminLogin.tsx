@@ -18,7 +18,8 @@ const AdminLogin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && role === 'admin') {
+    if (isAuthenticated && role === 'ADMIN') {
+      // console.log("here login:",role)
       navigate('/admin/dashboard');
     }
   }, [isAuthenticated, role, navigate]);
@@ -50,12 +51,15 @@ const AdminLogin = () => {
     setLoading(false);
 
     if (success) {
-      if (role === 'admin') {
-        toast.success('Login successful! Welcome back.');
-        navigate('/admin/dashboard');
-      } else {
-        toast.error('Access denied. Admin credentials required.');
-      }
+      toast.success('Login successful! Welcome back.');
+      // if (role === "ADMIN") {
+      //   // console.log("login nav")
+      //   toast.success('Login successful! Welcome back.');
+      //   navigate('/admin/dashboard');
+      // } else {
+      //   // console.log(role)
+      //   toast.error('Access denied. Admin credentials required.');
+      // }
     } else {
       toast.error('Invalid credentials. Please try again.');
     }

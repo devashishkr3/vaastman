@@ -95,15 +95,15 @@ import { ReactNode } from "react";
 
 
 export interface User {
-  certificatesCreatedCount: number;
   id: string;
-  email: string;
-  password: string;
-  role: 'admin' | 'employee';
+  role: 'ADMIN' | 'EMPLOYEE';
   name: string;
+  email: string;
+  mobile:string;
+  password: string;
   isActive?: boolean;
   createdAt: string;
-  lastCertificateDate?: string; // last date when employee created a certificate
+  updatedAt?: string; // last date when employee created a certificate
 }
 
 export interface University {
@@ -142,5 +142,5 @@ export interface Certificate {
 export interface AuthState {
   user: User | null;
   isAuthenticated: boolean;
-  role: 'admin' | 'employee' | 'public' | null;
+  role: 'ADMIN' | 'EMPLOYEE' | 'PUBLIC' | null;
 }

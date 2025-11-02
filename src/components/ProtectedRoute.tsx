@@ -10,7 +10,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({ children, allowe
   const { isAuthenticated, role } = useAuth();
 
   if (!isAuthenticated || role !== allowedRole) {
-    return <Navigate to={allowedRole === 'admin' ? '/admin/login' : '/employee/login'} replace />;
+    return <Navigate to={allowedRole === 'ADMIN' ? '/admin/login' : '/employee/login'} replace />;
   }
 
   return <>{children}</>;

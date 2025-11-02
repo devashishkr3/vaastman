@@ -34,12 +34,12 @@ const AdminDashboard = () => {
     const users = getUsers() || [];
     const certificates = getCertificates() || [];
 
-    const employees = users.filter((u) => u.role === 'employee');
+    const employees = users.filter((u) => u.role === 'EMPLOYEE');
 
     // group certificates by employee name + date
     const summaryMap = {};
     certificates.forEach((cert) => {
-      const empName = cert.createdByName || 'Admin';// username
+      const empName = cert.createdByName || 'ADMIN';// username
       const date = cert.createdAt
         ? new Date(cert.createdAt).toLocaleDateString()
         : 'Unknown Date';

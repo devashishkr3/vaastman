@@ -58,14 +58,14 @@ const App = () => (
             <Route path="/admin/login" element={<AdminLogin />} />
             <Route path="/employee/login" element={<EmployeeLogin />} />
             <Route path="/certificate-corner" element={<CertificateCorner />} />
-            <Route path="/admin" element={<ProtectedRoute allowedRole="admin"><DashboardLayout /></ProtectedRoute>}>
+            <Route path="/admin" element={<ProtectedRoute allowedRole="ADMIN"><DashboardLayout /></ProtectedRoute>}>
               <Route path="dashboard" element={<AdminDashboard />} />
               <Route path="colleges" element={<CollegeManagement />} />
               <Route path="university" element={<UniversityManagement />} />
               <Route path="employees" element={<EmployeeManagement />} />
               <Route path="certificates" element={<CertificateManagement />} />
             </Route>
-            <Route path="/employee" element={<ProtectedRoute allowedRole="employee"><DashboardLayout /></ProtectedRoute>}>
+            <Route path="/employee" element={<ProtectedRoute allowedRole="EMPLOYEE"><DashboardLayout /></ProtectedRoute>}>
               <Route path="dashboard" element={<EmployeeDashboard />} />
               <Route path="create" element={<CreateCertificate />} />
               <Route path="certificates" element={<ViewCertificates />} />
