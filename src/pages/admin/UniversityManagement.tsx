@@ -22,14 +22,20 @@ import {
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { Plus, Pencil, Trash2, Search } from "lucide-react";
-import { getUniversities, addUniversity, updateUniversity, deleteUniversity } from "@/utils/localStorage";
+import { getAllUniversity } from "@/utils/getData";
+// import { getUniversities, addUniversity, updateUniversity, deleteUniversity } from "@/utils/localStorage";
+
+
+const url = import.meta.env.VITE_API_URL
+const token = localStorage.getItem("accessToken");
+
 
 // Type
 interface University {
     id: string;
     name: string;
-    location: string;
-    code: string;
+    address: string;
+    // code: string;
     createdAt: string;
 }
 
@@ -40,13 +46,14 @@ const UniversityManagement = () => {
     const [searchTerm, setSearchTerm] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingUniversity, setEditingUniversity] = useState<University | null>(null);
-    const [formData, setFormData] = useState({ name: "", location: "", code: "" });
+    const [formData, setFormData] = useState({ name: "", address: "" });
 
     // Load universities
     useEffect(() => {
-        const data = getUniversities();
-        setUniversities(data);
-        setFilteredUniversities(data);
+        getAllUniversities();
+        // console.log(data)
+        // setUniversities(data);
+        // setFilteredUniversities(data);
     }, []);
 
     // Filter search
@@ -54,23 +61,60 @@ const UniversityManagement = () => {
         const filtered = universities.filter(
             (u) =>
                 u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                u.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                u.code.toLowerCase().includes(searchTerm.toLowerCase())
+                u.address.toLowerCase().includes(searchTerm.toLowerCase())
+            // u.code.toLowerCase().includes(searchTerm.toLowerCase())
         );
         setFilteredUniversities(filtered);
     }, [searchTerm, universities]);
+
+
+
+    async function getAllUniversities() {
+
+
+        const data=await getAllUniversity()
+
+        setUniversities(data);
+        setFilteredUniversities(data);
+
+        // try {
+        //     const response = await fetch(`${url}/api/v1/admin/university`, {
+        //         method: "GET",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             "Authorization": `Bearer ${token}`,
+        //         },
+        //     });
+
+        //     if (!response.ok) {
+        //         const errorData = await response.json();
+        //         console.error("Failed to fetch universities:", errorData);
+        //         return null;
+        //     }
+
+        //     const result = await response.json();
+        //     setUniversities(result.data);
+        //     setFilteredUniversities(result.data);
+        //     console.log("Universities fetched successfully:", result.data);
+        //     return result.data;
+        // } catch (error) {
+        //     console.error("Error fetching universities:", error);
+        //     return null;
+        // }
+    }
+
 
     const handleOpenModal = (university?: University) => {
         if (university) {
             setEditingUniversity(university);
             setFormData({
                 name: university.name,
-                location: university.location,
-                code: university.code,
+                address: university.address,
+                // code: university.code,
             });
         } else {
             setEditingUniversity(null);
-            setFormData({ name: "", location: "", code: "" });
+            setFormData({ name: "", address: "" });
         }
         setIsModalOpen(true);
     };
@@ -78,42 +122,113 @@ const UniversityManagement = () => {
     const handleCloseModal = () => {
         setIsModalOpen(false);
         setEditingUniversity(null);
-        setFormData({ name: "", location: "", code: "" });
+        setFormData({ name: "", address: "" });
     };
 
-    const handleSubmit = (e: React.FormEvent) => {
+    const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (!formData.name || !formData.location || !formData.code) {
+        if (!formData.name || !formData.address) {
             toast.error("Please fill all fields");
             return;
         }
 
         if (editingUniversity) {
-            updateUniversity(editingUniversity.id, formData);
-            toast.success("University updated successfully");
-        } else {
-            const newUniversity: University = {
-                id: Date.now().toString(),
-                ...formData,
-                createdAt: new Date().toISOString(),
-            };
-            addUniversity(newUniversity);
-            toast.success("University added successfully");
-        }
+            // updateUniversity(editingUniversity.id, formData);
 
-        const data = getUniversities();
-        setUniversities(data);
-        setFilteredUniversities(data);
+            try {
+                const response = await fetch(`${url}/api/v1/admin/university/${editingUniversity.id}`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // replace with actual token
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('Error:', data.error || data.message);
+                    return;
+                }
+                toast.success("University updated successfully");
+
+                console.log('University created successfully:', data);
+            } catch (error) {
+                console.error('Request failed:', error);
+            }
+
+        } else {
+            // const newUniversity: University = {
+            //     id: Date.now().toString(),
+            //     ...formData,
+            //     createdAt: new Date().toISOString(),
+            // };
+            // addUniversity(newUniversity);
+
+            try {
+                const response = await fetch(`${url}/api/v1/admin/university`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // replace with actual token
+                    },
+                    body: JSON.stringify(formData)
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('Error:', data.error || data.message);
+                    return;
+                }
+                toast.success("University added successfully");
+
+                console.log('University created successfully:', data);
+            } catch (error) {
+                console.error('Request failed:', error);
+            }
+
+
+
+
+        }
+        getAllUniversities();
+        // const data = getUniversities();
+        // setUniversities(data);
+        // setFilteredUniversities(data);
         handleCloseModal();
     };
 
-    const handleDelete = (id: string) => {
+    const handleDelete = async (id: string) => {
         if (confirm("Are you sure you want to delete this university?")) {
-            deleteUniversity(id);
-            const data = getUniversities();
-            setUniversities(data);
-            setFilteredUniversities(data);
-            toast.success("University deleted successfully");
+            try {
+                const response = await fetch(`${url}/api/v1/admin/university/${id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}` // replace with actual token
+                    },
+                    
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    console.error('Error:', data.error || data.message);
+                    return;
+                }
+                toast.success("University deleted successfully");
+                getAllUniversities();
+                console.log('University created successfully:', data);
+            } catch (error) {
+                console.error('Request failed:', error);
+            }
+            // deleteUniversity(id);
+            // const data = getUniversities();
+            // setUniversities(data);
+            // setFilteredUniversities(data);
+            
         }
     };
 
@@ -148,7 +263,7 @@ const UniversityManagement = () => {
                             <TableRow>
                                 <TableHead>Name</TableHead>
                                 <TableHead>Location</TableHead>
-                                <TableHead>Code</TableHead>
+                                {/* <TableHead>Code</TableHead> */}
                                 <TableHead>Created At</TableHead>
                                 <TableHead className="text-right">Actions</TableHead>
                             </TableRow>
@@ -164,12 +279,12 @@ const UniversityManagement = () => {
                                 filteredUniversities.map((u) => (
                                     <TableRow key={u.id} className="hover:bg-muted/50">
                                         <TableCell className="font-medium">{u.name}</TableCell>
-                                        <TableCell>{u.location}</TableCell>
-                                        <TableCell>
+                                        <TableCell>{u.address}</TableCell>
+                                        {/* <TableCell>
                                             <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary/10 text-primary">
                                                 {u.code}
                                             </span>
-                                        </TableCell>
+                                        </TableCell> */}
                                         <TableCell>{new Date(u.createdAt).toLocaleDateString()}</TableCell>
                                         <TableCell className="text-right flex justify-end gap-2">
                                             <Button variant="ghost" size="icon" onClick={() => handleOpenModal(u)}>
@@ -211,18 +326,18 @@ const UniversityManagement = () => {
                                 <Label htmlFor="location">Location</Label>
                                 <Input
                                     id="location"
-                                    value={formData.location}
-                                    onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                                    value={formData.address}
+                                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
                                 />
                             </div>
-                            <div className="space-y-2">
+                            {/* <div className="space-y-2">
                                 <Label htmlFor="code">Code</Label>
                                 <Input
                                     id="code"
                                     value={formData.code}
                                     onChange={(e) => setFormData({ ...formData, code: e.target.value })}
                                 />
-                            </div>
+                            </div> */}
                         </div>
                         <DialogFooter>
                             <Button variant="outline" type="button" onClick={handleCloseModal}>

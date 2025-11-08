@@ -24,10 +24,15 @@ import { Plus, Pencil, Trash2, Search } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { College, University } from "@/types";
 import { getColleges, addCollege, updateCollege, deleteCollege, getUniversities } from "@/utils/localStorage";
+import { getAllUniversity } from "@/utils/getData";
+
+const url = import.meta.env.VITE_API_URL
+const token = localStorage.getItem("accessToken");
 
 // Component
 const CollegeManagement = () => {
   const [colleges, setColleges] = useState<College[]>([]);
+  const [filteredColleges, setFilteredColleges] = useState<College[]>([]);
   const [universities, setUniversities] = useState<University[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -35,28 +40,61 @@ const CollegeManagement = () => {
 
   const [formData, setFormData] = useState({
     name: "",
+    address: "",
     universityId: "",
-    code: "",
+    collegeCode: ""
   });
 
   // Load data from localStorage
   useEffect(() => {
-    const storedUniversities = getUniversities();
-    setUniversities(storedUniversities);
+    getAllUniversities();
+    loadColleges();
 
-    const storedColleges = getColleges().map(c => ({
-      ...c,
-      code: c.code || "",
-      createdAt: c.createdAt || new Date().toISOString(),
-    }));
-    setColleges(storedColleges);
+    // const storedColleges = getColleges().map(c => ({
+    //   ...c,
+    //   code: c.code || "",
+    //   createdAt: c.createdAt || new Date().toISOString(),
+    // }));
+    // setColleges(storedColleges);
   }, []);
 
-  const filteredColleges = colleges.filter(
-    c =>
-      c.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      c.code.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  const getAllUniversities = async () => {
+    const university = await getAllUniversity();
+    setUniversities(university);
+  }
+
+  const loadColleges = async () => {
+    try {
+      const response = await fetch(`${url}/api/v1/admin/college`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        }
+      });
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to fetch universities:", errorData);
+        return null;
+      }
+      const result = await response.json();
+      setColleges(result.data);
+      setFilteredColleges(result.data);
+      console.log(result);
+    } catch (error) {
+      console.log("Error fetching college data:", error)
+    }
+  }
+
+  useEffect(() => {
+    const filtered = colleges.filter(
+      (u) =>
+        u.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        u.address.toLowerCase().includes(searchTerm.toLowerCase())
+      // u.code.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredColleges(filtered);
+  }, [searchTerm, colleges]);
 
   const handleOpenModal = (college?: College) => {
     if (college) {
@@ -64,11 +102,12 @@ const CollegeManagement = () => {
       setFormData({
         name: college.name,
         universityId: college.universityId,
-        code: college.code,
+        address: college.address,
+        collegeCode: college.collegeCode
       });
     } else {
       setEditingCollege(null);
-      setFormData({ name: "", universityId: "", code: "" });
+      setFormData({ name: "", address: "", universityId: "", collegeCode: "" });
     }
     setIsModalOpen(true);
   };
@@ -76,10 +115,10 @@ const CollegeManagement = () => {
   const handleCloseModal = () => {
     setIsModalOpen(false);
     setEditingCollege(null);
-    setFormData({ name: "", universityId: "", code: "" });
+    setFormData({ name: "", address: "", universityId: "", collegeCode: "" });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.universityId) {
       toast.error("Please fill all fields");
@@ -88,37 +127,109 @@ const CollegeManagement = () => {
 
     if (editingCollege) {
       // Update college
-      const updated: College = {
-        ...editingCollege,
-        ...formData,
-        createdAt: editingCollege.createdAt || new Date().toISOString(),
-      };
-      updateCollege(editingCollege.id, updated);
-      setColleges(prev =>
-        prev.map(c => (c.id === updated.id ? updated : c))
-      );
-      toast.success("College updated successfully");
+
+      try {
+        const response = await fetch(`${url}/api/v1/admin/college/${editingCollege.id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // replace with actual token
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('Error:', data.error || data.message);
+          return;
+        }
+        toast.success("College updated successfully");
+
+        console.log('College updated successfully:', data);
+      } catch (error) {
+        console.error('Request failed:', error);
+      }
+
+
+
+      // const updated: College = {
+      //   ...editingCollege,
+      //   ...formData,
+      //   createdAt: editingCollege.createdAt || new Date().toISOString(),
+      // };
+      // updateCollege(editingCollege.id, updated);
+      // setColleges(prev =>
+      //   prev.map(c => (c.id === updated.id ? updated : c))
+      // );
+
     } else {
+      //addind new college
+      try {
+        const response = await fetch(`${url}/api/v1/admin/college`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // replace with actual token
+          },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('Error:', data.error || data.message);
+          return;
+        }
+        toast.success("College added successfully");
+
+        console.log('College created successfully:', data);
+      } catch (error) {
+        console.error('Request failed:', error);
+      }
+
+
       // Add new college
-      const newCollege: College = {
-        id: Date.now().toString(),
-        ...formData,
-        code: formData.code || "",
-        createdAt: new Date().toISOString(),
-      };
-      addCollege(newCollege);
-      setColleges(prev => [...prev, newCollege]);
-      toast.success("College added successfully");
+      // const newCollege: College = {
+      //   id: Date.now().toString(),
+      //   ...formData,
+      //   code: formData.code || "",
+      //   createdAt: new Date().toISOString(),
+      // };
+      // addCollege(newCollege);
+      // setColleges(prev => [...prev, newCollege]);
+
     }
+    loadColleges();
 
     handleCloseModal();
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm("Are you sure you want to delete this college?")) {
-      deleteCollege(id);
-      setColleges(prev => prev.filter(c => c.id !== id));
-      toast.success("College deleted successfully");
+      try {
+        const response = await fetch(`${url}/api/v1/admin/college/${id}`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}` // replace with actual token
+          },
+
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          console.error('Error:', data.error || data.message);
+          return;
+        }
+        toast.success("College deleted successfully");
+        loadColleges();
+        console.log('College created successfully:', data);
+      } catch (error) {
+        console.error('Request failed:', error);
+      }
+      // toast.success("College deleted successfully");
     }
   };
 
@@ -212,6 +323,15 @@ const CollegeManagement = () => {
               </div>
 
               <div className="space-y-2">
+                <Label htmlFor="address">College Address</Label>
+                <Input
+                  id="address"
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                />
+              </div>
+
+              <div className="space-y-2">
                 <Label htmlFor="university">Select University</Label>
                 <Select
                   value={formData.universityId}
@@ -232,8 +352,8 @@ const CollegeManagement = () => {
                 <Label htmlFor="code">College Code</Label>
                 <Input
                   id="code"
-                  value={formData.code}
-                  onChange={(e) => setFormData({ ...formData, code: e.target.value })}
+                  value={formData.collegeCode}
+                  onChange={(e) => setFormData({ ...formData, collegeCode: e.target.value })}
                 />
               </div>
             </div>

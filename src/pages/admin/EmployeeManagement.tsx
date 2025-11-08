@@ -9,7 +9,10 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Plus, Pencil, Trash2, Search, CheckCircle, XCircle, Key } from 'lucide-react';
 import { User } from '@/types';
-import { getUsers, addUser, updateUser, deleteUser } from '@/utils/localStorage';
+// import { getUsers, addUser, updateUser, deleteUser } from '@/utils/localStorage';
+
+const url = import.meta.env.VITE_API_URL
+const token = localStorage.getItem("accessToken");
 
 const EmployeeManagement = () => {
   const [employees, setEmployees] = useState<User[]>([]);
@@ -17,7 +20,7 @@ const EmployeeManagement = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingEmployee, setEditingEmployee] = useState<User | null>(null);
-  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '', mobile: '' });
 
   useEffect(() => {
     loadEmployees();
@@ -31,50 +34,188 @@ const EmployeeManagement = () => {
     setFilteredEmployees(filtered);
   }, [searchTerm, employees]);
 
-  const loadEmployees = () => {
-    const users = getUsers().filter(u => u.role === 'employee');
-    setEmployees(users);
-    setFilteredEmployees(users);
+  const loadEmployees = async () => {
+    // const users = getUsers().filter(u => u.role === 'EMPLOYEE');
+
+
+    try {
+      const response = await fetch(`${url}/api/v1/admin/employees`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to fetch employees:", errorData);
+        return null;
+      }
+
+      const result = await response.json();
+      setEmployees(result.data);
+      setFilteredEmployees(result.data);
+      console.log("Employees fetched successfully:", result.data);
+      return result.data;
+    } catch (error) {
+      console.error("Error fetching employees:", error);
+      return null;
+    }
+    // setEmployees(users);
+    // setFilteredEmployees(users);
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.email || !formData.password) {
       toast.error('Please fill in all fields');
       return;
+    } else if (formData.password.length < 6) {
+      toast.error('Password must be Greater than 6 character');
+      return;
     }
 
     if (editingEmployee) {
-      updateUser(editingEmployee.id, formData);
-      toast.success('Employee updated successfully');
+      //updateing employee
+      try {
+        const response = await fetch(`${url}/api/v1/admin/employees/${editingEmployee.id}`, {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Failed to update employee:", errorData);
+          return null;
+        }
+
+        const result = await response.json();
+        toast.success('Employee updated successfully');
+        console.log("Employee updated successfully:", result);
+        return result;
+      } catch (error) {
+        console.error("Error updating employee: ", error);
+        toast.error("Error updating employee")
+        return null;
+      }
+
+
+      // updateUser(editingEmployee.id, formData);
+
     } else {
-      const newEmployee: User = {
-        id: Date.now().toString(),
-        ...formData,
-        role: 'employee',
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        certificatesCreatedCount: 0
-      };
-      addUser(newEmployee);
-      toast.success('Employee added successfully');
+      //creating new employee
+      try {
+        const response = await fetch(`${url}/api/v1/admin/employees`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
+          body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error("Failed to create employee:", errorData);
+          return;
+        }
+
+        const result = await response.json();
+        toast.success('Employee added successfully');
+        console.log("Employee created successfully:", result);
+      } catch (error) {
+        toast.error("Error creating employee");
+        console.error("Error creating employee:", error);
+      }
+
+
+
+      // const newEmployee: User = {
+      //   id: Date.now().toString(),
+      //   ...formData,
+      //   role: 'EMPLOYEE',
+      //   isActive: true,
+      //   createdAt: new Date().toISOString(),
+      //   // certificatesCreatedCount: 0
+      // };
+      // addUser(newEmployee);
+
     }
     loadEmployees();
     setIsModalOpen(false);
-    setFormData({ name: '', email: '', password: '' });
+    setFormData({ name: '', email: '', password: '', mobile: '' });
   };
 
-  const toggleStatus = (employee: User) => {
-    updateUser(employee.id, { isActive: !employee.isActive });
-    toast.success(`Employee ${!employee.isActive ? 'activated' : 'deactivated'}`);
-    loadEmployees();
+  const toggleStatus = async (employee: User) => {
+    // updateUser(employee.id, { isActive: !employee.isActive });
+    const token = "YOUR_ADMIN_JWT_TOKEN"; // Replace with a valid admin token
+
+    try {
+      const response = await fetch(`${url}/api/v1/admin/employees/${employee.id}/toggle`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to toggle employee status:", errorData);
+        return null;
+      }
+
+      const result = await response.json();
+      toast.success(`Employee ${!employee.isActive ? 'activated' : 'deactivated'}`);
+      loadEmployees();
+      console.log("Employee status toggled successfully:", result);
+      return result;
+    } catch (error) {
+      console.error("Error toggling employee status:", error);
+      return null;
+    }
+
   };
 
-  const resetPassword = (employee: User) => {
-    const newPassword = 'reset123';
-    updateUser(employee.id, { password: newPassword });
-    toast.success(`Password reset to: ${newPassword}`);
-  };
+  // const resetPassword = (employee: User) => {
+  //   const newPassword = 'reset123';
+  //   updateUser(employee.id, { password: newPassword });
+  //   toast.success(`Password reset to: ${newPassword}`);
+  // };
+
+
+  async function deleteEmployee(id) {
+
+    try {
+      const response = await fetch(`${url}/api/v1/admin/employees/${id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Failed to delete employee:", errorData);
+        return null;
+      }
+
+      const result = await response.json();
+      toast.success('Deleted'); loadEmployees();
+      console.log("Employee deleted successfully:", result);
+      return result;
+    } catch (error) {
+      console.error("Error deleting employee:", error);
+      toast.error("Error deleting employee");
+      return null;
+    }
+  }
 
   return (
     <div>
@@ -83,7 +224,7 @@ const EmployeeManagement = () => {
           <h1 className="text-3xl font-bold mb-2">Employee Management</h1>
           <p className="text-muted-foreground">Manage employee accounts</p>
         </div>
-        <Button onClick={() => { setEditingEmployee(null); setFormData({ name: '', email: '', password: '' }); setIsModalOpen(true); }}>
+        <Button onClick={() => { setEditingEmployee(null); setFormData({ name: '', email: '', password: '', mobile: '' }); setIsModalOpen(true); }}>
           <Plus className="h-4 w-4 mr-2" />Add Employee
         </Button>
       </div>
@@ -122,13 +263,13 @@ const EmployeeManagement = () => {
                     <Button variant="ghost" size="icon" onClick={() => toggleStatus(emp)}>
                       {emp.isActive ? <XCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => resetPassword(emp)}>
+                    {/* <Button variant="ghost" size="icon" onClick={() => resetPassword(emp)}>
                       <Key className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => { setEditingEmployee(emp); setFormData({ name: emp.name, email: emp.email, password: emp.password }); setIsModalOpen(true); }}>
+                    </Button> */}
+                    <Button variant="ghost" size="icon" onClick={() => { setEditingEmployee(emp); setFormData({ name: emp.name, email: emp.email, password: emp.password, mobile: emp.mobile }); setIsModalOpen(true); }}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button variant="ghost" size="icon" onClick={() => { if (confirm('Delete employee?')) { deleteUser(emp.id); toast.success('Deleted'); loadEmployees(); } }}>
+                    <Button variant="ghost" size="icon" onClick={() => { if (confirm('Delete employee?')) { deleteEmployee(emp.id);  } }}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
@@ -156,6 +297,10 @@ const EmployeeManagement = () => {
             <div>
               <Label>Password</Label>
               <Input type="password" value={formData.password} onChange={(e) => setFormData({ ...formData, password: e.target.value })} />
+            </div>
+            <div>
+              <Label>Phone No.</Label>
+              <Input type="tel" value={formData.mobile} onChange={(e) => setFormData({ ...formData, mobile: e.target.value })} />
             </div>
             <DialogFooter>
               <Button type="submit">{editingEmployee ? 'Update' : 'Add'}</Button>

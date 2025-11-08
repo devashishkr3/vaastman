@@ -59,12 +59,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       return false
     }
     toast.dismiss(data.message);
-    // console.log("login: ",data);
+    console.log("login: ",data);
     
     const user = data.data;
     // Save tokens for later
     localStorage.setItem("accessToken", data.accessToken);
-    localStorage.setItem("refreshToken", data.refreshToken);
+    // console.log(data.accessToken)
+    localStorage.setItem("refreshToken", data.resreshToken);
+    // console.log(data.resreshToken)
     // console.log("login role: ",user.role)
     if (user && user.isActive !== false) {
       saveAuth(user);

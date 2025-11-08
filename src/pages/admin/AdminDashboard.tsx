@@ -15,6 +15,9 @@ import {
 } from '@/utils/localStorage';
 import { useNavigate } from 'react-router-dom';
 
+const url=import.meta.env.VITE_API_URL;
+const token=localStorage.getItem("accessToken");
+
 const AdminDashboard = () => {
   const navigate = useNavigate();
 
@@ -23,63 +26,100 @@ const AdminDashboard = () => {
     universities: 0,
     employees: 0,
     certificates: 0,
+    student: 0
   });
 
-  const [certificateSummary, setCertificateSummary] = useState([]);
+  // const [certificateSummary, setCertificateSummary] = useState([]);
 
   // ✅ update dashboard data
-  const updateDashboardData = () => {
-    const colleges = getColleges() || [];
-    const universities = getUniversities() || [];
-    const users = getUsers() || [];
-    const certificates = getCertificates() || [];
+  const updateDashboardData =async () => {
 
-    const employees = users.filter((u) => u.role === 'EMPLOYEE');
-
-    // group certificates by employee name + date
-    const summaryMap = {};
-    certificates.forEach((cert) => {
-      const empName = cert.createdByName || 'ADMIN';// username
-      const date = cert.createdAt
-        ? new Date(cert.createdAt).toLocaleDateString()
-        : 'Unknown Date';
-      const key = `${empName}-${date}`;
-
-      if (!summaryMap[key]) summaryMap[key] = { employee: empName, date, count: 0 };
-      summaryMap[key].count += 1;
+  try {
+    const response = await fetch(`${url}/api/v1/admin/dashboard`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`
+      }
     });
 
-    setCertificateSummary(Object.values(summaryMap));
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("Failed to get data:", errorData);
+      return;
+    }
+    
+
+    const result = await response.json();
 
     setStats({
-      colleges: colleges.length,
-      universities: universities.length,
-      employees: employees.length,
-      certificates: certificates.length,
+      colleges: result.data.totalColleges,
+      universities: result.data.totalUniversities,
+      employees: result.data.totalEmployees,
+      certificates: result.data.totalCertificates,
+      student: result.data.totalStudents
     });
-  };
+  
 
-  useEffect(() => {
+    console.log("Dashboard data updated successfully:", result);
+  } catch (error) {
+    console.error("Error creating employee:", error);
+  }
+
+
+
+
+
+
+    // const colleges = getColleges() || [];
+    // const universities = getUniversities() || [];
+    // const users = getUsers() || [];
+    // const certificates = getCertificates() || [];
+
+    // const employees = users.filter((u) => u.role === 'EMPLOYEE');
+
+    // group certificates by employee name + date
+    // const summaryMap = {};
+    // certificates.forEach((cert) => {
+    //   const empName = cert.createdByName || 'ADMIN';// username
+    //   const date = cert.createdAt
+    //     ? new Date(cert.createdAt).toLocaleDateString()
+    //     : 'Unknown Date';
+    //   const key = `${empName}-${date}`;
+
+    //   if (!summaryMap[key]) summaryMap[key] = { employee: empName, date, count: 0 };
+    //   summaryMap[key].count += 1;
+    // });
+
+    // setCertificateSummary(Object.values(summaryMap));
+
+}; 
+
+  useEffect( () => {
+
+    
+
+
     updateDashboardData();
 
     // listen for localStorage changes and custom event
-    const handleStorageChange = (e) => {
-      if (
-        [
-          'cms_colleges',
-          'cms_users',
-          'cms_certificates',
-          'cms_universities',
-        ].includes(e.key)
-      ) updateDashboardData();
-    };
+    // const handleStorageChange = (e) => {
+    //   if (
+    //     [
+    //       'cms_colleges',
+    //       'cms_users',
+    //       'cms_certificates',
+    //       'cms_universities',
+    //     ].includes(e.key)
+    //   ) updateDashboardData();
+    // };
 
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('localDataUpdated', updateDashboardData);
+    // window.addEventListener('storage', handleStorageChange);
+    // window.addEventListener('localDataUpdated', updateDashboardData);
 
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('localDataUpdated', updateDashboardData);
+      // window.removeEventListener('storage', handleStorageChange);
+      // window.removeEventListener('localDataUpdated', updateDashboardData);
     };
   }, []);
 
@@ -98,12 +138,14 @@ const AdminDashboard = () => {
 
       {/* 4 Cards in 1 row */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6">
-        <div onClick={() => handleCardClick('colleges')} className="cursor-pointer">
+              
+
+        <div onClick={() => handleCardClick('employees')} className="cursor-pointer">
           <StatCard
-            title="Total Colleges"
-            value={stats.colleges}
-            icon={Building2}
-            description="Registered institutions"
+            title="Total Employees"
+            value={stats.employees}
+            icon={Users}
+            description="Active staff members"
           />
         </div>
 
@@ -116,12 +158,21 @@ const AdminDashboard = () => {
           />
         </div>
 
-        <div onClick={() => handleCardClick('employees')} className="cursor-pointer">
+        <div onClick={() => handleCardClick('colleges')} className="cursor-pointer">
           <StatCard
-            title="Total Employees"
-            value={stats.employees}
-            icon={Users}
-            description="Active staff members"
+            title="Total Colleges"
+            value={stats.colleges}
+            icon={Building2}
+            description="Registered institutions"
+          />
+        </div>
+
+        <div onClick={() => handleCardClick('student')} className="cursor-pointer">
+          <StatCard
+            title="Total Student"
+            value={stats.student}
+            icon={Building2}
+            description="Registered Student"
           />
         </div>
 
@@ -136,7 +187,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Certificate Summary Table */}
-      <div className="mt-10">
+      {/* <div className="mt-10">
         <h2 className="text-2xl font-semibold mb-4 flex items-center gap-2">
           <CalendarDays className="w-6 h-6 text-primary" />
           Certificate Creation Summary
@@ -170,7 +221,7 @@ const AdminDashboard = () => {
             </tbody>
           </table>
         </div>
-      </div>
+      </div> */}
     </div>
   );
 };

@@ -109,8 +109,8 @@ export interface User {
 export interface University {
   id: string;
   name: string;
-  location: string;
-  code: string;
+  address: string;
+  // code: string;
   createdAt: string;
 }
 
@@ -118,6 +118,8 @@ export interface College {
   code: string;
   id: string;
   name: string;
+  address: string;
+  collegeCode: string;
   universityId: string; // link to university
   createdAt: string;
 }

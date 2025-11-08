@@ -10,6 +10,10 @@ import { Shield, ArrowLeft } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import logo from '@/assets/vaastman.png';
 
+
+const url=import.meta.env.VITE_API_URL;
+const refreshToken=localStorage.getItem("refreshToken");
+
 const AdminLogin = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -17,9 +21,39 @@ const AdminLogin = () => {
   const { login, isAuthenticated, role } = useAuth();
   const navigate = useNavigate();
 
+
+
+  const refreshAccessToken = async () => {
+  try {
+    // const refreshToken=localStorage.getItem("refreshToken");
+    // console.log(refreshToken)
+    const response = await fetch(`${url}/api/v1/auth/refresh-token`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${refreshToken}`, // <-- replace with your actual refresh token
+      },
+    });
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = await response.json();
+    localStorage.setItem("accessToken", data.data.accessToken);
+    // console.log("New access token:", data.data.accessToken);
+    // return data;
+  } catch (error) {
+    console.error("Error refreshing access token:", error);
+  }
+};
+
+
+
   useEffect(() => {
     if (isAuthenticated && role === 'ADMIN') {
-      // console.log("here login:",role)
+      refreshAccessToken();
+      console.log("here login:",role)
       navigate('/admin/dashboard');
     }
   }, [isAuthenticated, role, navigate]);

@@ -17,7 +17,7 @@ const EmployeeLogin = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated && role === 'employee') navigate('/employee/dashboard');
+    if (isAuthenticated && role === 'EMPLOYEE') navigate('/employee/dashboard');
   }, [isAuthenticated, role, navigate]);
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -25,7 +25,7 @@ const EmployeeLogin = () => {
     setLoading(true);
     const success = await login(email, password);
     setLoading(false);
-    if (success && role === 'employee') {
+    if (success && role === 'EMPLOYEE') {
       toast.success('Login successful!');
       navigate('/employee/dashboard');
     } else {
