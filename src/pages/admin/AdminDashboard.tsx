@@ -7,12 +7,12 @@ import {
   CalendarDays,
   GraduationCap,
 } from 'lucide-react';
-import {
-  getColleges,
-  getUsers,
-  getCertificates,
-  getUniversities,
-} from '@/utils/localStorage';
+// import {
+//   getColleges,
+//   getUsers,
+//   getCertificates,
+//   getUniversities,
+// } from '@/utils/localStorage';
 import { useNavigate } from 'react-router-dom';
 
 const url=import.meta.env.VITE_API_URL;

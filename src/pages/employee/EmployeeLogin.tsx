@@ -25,7 +25,7 @@ const EmployeeLogin = () => {
     setLoading(true);
     const success = await login(email, password);
     setLoading(false);
-    if (success && role === 'EMPLOYEE') {
+    if (success ) {
       toast.success('Login successful!');
       navigate('/employee/dashboard');
     } else {
